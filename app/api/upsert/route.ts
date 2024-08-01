@@ -5,9 +5,17 @@ export const fetchCache = 'force-no-store'
 import { storageContextFromDefaults, VectorStoreIndex } from 'llamaindex'
 import { PDFReader } from 'llamaindex/readers/PDFReader'
 import vectorStore from '@/lib/vectorStore'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export async function POST(request: NextRequest) {
+  // Check if the user is authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   // Parse the form data from the request to get the file
   const data = await request.formData()
   const file = data.get('file') as File
